@@ -39,6 +39,36 @@ esac
 PACKAGE_DIR="${HOME}/.packages"
 FF_DIR="${PACKAGE_DIR}/${FF_EDITION_ID}"
 
+FF_DESKTOP_FILE="${FF_EDITION_ID}"
+
+if [ -f "${FF_DIR}/firefox" ]; then
+	echo "Looks like you've already installed a ${FF_EDITION}"
+	echo -n "Do you want to install another? (y/N) : "
+
+	read n
+	case $n in
+		"y")
+			COUNTER=2
+			while [ true ]
+			do
+				if [ ! -f "${FF_DIR}-${COUNTER}/firefox" ]; then
+					FF_EDITION="${FF_EDITION} ${COUNTER}"
+					FF_DIR="${PACKAGE_DIR}/${FF_EDITION_ID}-${COUNTER}"
+					FF_DESKTOP_FILE="${FF_EDITION_ID}-${COUNTER}"
+					break
+				else
+					((COUNTER++))
+				fi
+			done;;
+		*)
+			echo "exited..."
+			exit;;
+	esac
+fi
+
+#echo "${FF_DIR}"
+#exit
+
 # create package dir
 mkdir -p "${FF_DIR}"
 
@@ -56,7 +86,7 @@ rm -rf "${PACKAGE_DIR}/${FF_EDITION_ID}.tar"
 echo "done"
 
 echo -n "Creating Desktop File ...... "
-cat > "${HOME}/.local/share/applications/${FF_EDITION_ID}.desktop" <<EOL
+cat > "${HOME}/.local/share/applications/${FF_DESKTOP_FILE}.desktop" <<EOL
 [Desktop Entry]
 Version=1.0
 Name=${FF_EDITION}
