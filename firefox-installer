@@ -1,0 +1,90 @@
+#!/bin/bash
+
+set -o errexit   # abort on nonzero exitstatus
+set -o nounset   # abort on unbound variable
+set -o pipefail  # don't hide errors within pipes
+
+FF_EDITION=""
+FF_EDITION_ID=""
+
+echo ""
+echo "1. Stable"
+echo "2. Beta"
+echo "3. Developer"
+echo "4. Nightly"
+echo ""
+
+echo -n 'Which Firefox edition do you want to install? : '
+
+read n
+case $n in
+  1)
+  	FF_EDITION="Firefox"
+  	FF_EDITION_ID="firefox-latest-ssl"
+  ;;
+  2)
+  	FF_EDITION="Firefox Beta"
+  	FF_EDITION_ID="firefox-beta-latest-ssl";;
+  3)
+  	FF_EDITION="Firefox Developer Edition"  	
+  	FF_EDITION_ID="firefox-devedition-latest-ssl";;
+  4)
+  	FF_EDITION="Firefox Nightly"
+  	FF_EDITION_ID="firefox-nightly-latest-ssl";;
+  *) echo "invalid option";;
+esac
+
+PACKAGE_DIR="${HOME}/.packages"
+FF_DIR="${PACKAGE_DIR}/${FF_EDITION_ID}"
+
+# create package dir
+mkdir -p "${FF_DIR}"
+
+echo -n "Downloading ${FF_EDITION} from mozilla server ...... "
+wget "https://download.mozilla.org/?product=${FF_EDITION_ID}&os=linux64&lang=en-US" -O "${FF_EDITION_ID}.tar" -O "${PACKAGE_DIR}/${FF_EDITION_ID}.tar" -q
+echo "done"
+
+# extract into package directory
+echo -n "Extracting ${FF_EDITION_ID}.tar ...... "
+tar -xf "${PACKAGE_DIR}/${FF_EDITION_ID}.tar" -C "${FF_DIR}" --strip-components=1
+echo "done"
+
+echo -n "Removing ${FF_EDITION_ID}.tar ...... "
+rm -rf "${PACKAGE_DIR}/${FF_EDITION_ID}.tar"
+echo "done"
+
+echo -n "Creating Desktop File ...... "
+cat > "${HOME}/.local/share/applications/${FF_EDITION_ID}.desktop" <<EOL
+[Desktop Entry]
+Version=1.0
+Name=${FF_EDITION}
+GenericName=Web Browser
+Comment=Browse the Web
+Exec=${FF_DIR}/firefox %u
+Icon=${FF_DIR}/browser/chrome/icons/default/default128.png
+Terminal=false
+Type=Application
+MimeType=text/html;text/xml;application/xhtml+xml;application/vnd.mozilla.xul+xml;text/mml;x-scheme-handler/http;x-scheme-handler/https;
+StartupNotify=true
+Categories=Network;WebBrowser;
+Keywords=web;browser;internet;
+Actions=new-window;new-private-window;profile-manager-window;
+X-Desktop-File-Install-Version=0.26
+
+[Desktop Action new-window]
+Name=Open a New Window
+Exec=${FF_DIR}/firefox --new-window %u
+
+[Desktop Action new-private-window]
+Name=Open a New Private Window
+Exec=${FF_DIR}/firefox --private-window %u
+
+[Desktop Action profile-manager-window]
+Name=Open the Profile Manager
+Exec=${FF_DIR}/firefox --ProfileManager
+EOL
+echo "done"
+
+echo ""
+echo -e "\e[32;1m${FF_EDITION} successfully installed.\033[0m"
+echo "Please logout and login again."
