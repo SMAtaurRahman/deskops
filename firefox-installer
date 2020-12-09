@@ -31,7 +31,9 @@ case $n in
   4)
   	FF_EDITION="Firefox Nightly"
   	FF_EDITION_ID="firefox-nightly-latest-ssl";;
-  *) echo "invalid option";;
+  *)
+	echo "invalid option (please enter number)"
+	exit;;
 esac
 
 PACKAGE_DIR="${HOME}/.packages"
